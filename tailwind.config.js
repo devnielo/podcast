@@ -1,29 +1,26 @@
+import typography from '@tailwindcss/typography'
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c3d66',
+        brand: {
+          50: '#f4f7ff',
+          100: '#e5edff',
+          200: '#cdd9ff',
+          300: '#a6b8ff',
+          400: '#7d90ff',
+          500: '#5665ff',
+          600: '#3b40f5',
+          700: '#2c2fce',
+          800: '#2327a3',
+          900: '#1f2480',
         },
-      },
-      animation: {
-        'spin-slow': 'spin 2s linear infinite',
       },
     },
   },
-  plugins: [],
+  plugins: [typography],
 }
+

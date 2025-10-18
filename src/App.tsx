@@ -1,21 +1,8 @@
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
-import { Routes } from './routes'
-import { LoadingIndicator } from '@components/common'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './app/routes'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
-
-export const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Routes />
-      <LoadingIndicator />
-    </QueryClientProvider>
-  )
+function App() {
+  return <RouterProvider router={router} />
 }
+
+export default App

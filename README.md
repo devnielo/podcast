@@ -1,123 +1,73 @@
-# Podcast App
+# React + TypeScript + Vite
 
-Aplicación web moderna para descubrir y escuchar podcasts musicales. Desarrollada con React 19, Vite y TailwindCSS.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Características
+Currently, two official plugins are available:
 
-- **Top 100 Podcasts**: Acceso a los podcasts más populares de Apple
-- **Búsqueda en Tiempo Real**: Filtra podcasts por título o autor
-- **Reproductor de Audio**: Reproductor HTML5 nativo integrado
-- **Caché Inteligente**: Los datos se cachean por 24 horas
-- **SPA sin Hash**: Navegación limpia sin URLs con hash
-- **Diseño Responsivo**: Interfaz moderna con TailwindCSS
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Requisitos Previos
+## React Compiler
 
-- Node.js 20+
-- pnpm 8+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Instalación
+## Expanding the ESLint configuration
 
-```bash
-make install
-# o
-pnpm install
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Desarrollo
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```bash
-make dev
-# o
-pnpm run dev
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-La aplicación se abrirá automáticamente en `http://localhost:5173`
-
-## Producción
-
-### Build
-
-```bash
-make build
-# o
-pnpm run build
-```
-
-### Preview
-
-```bash
-make start
-# o
-pnpm run preview
-```
-
-## Docker
-
-### Build de la imagen
-
-```bash
-make docker-build
-```
-
-### Ejecutar contenedor
-
-```bash
-make docker-run
-```
-
-La aplicación estará disponible en `http://localhost:3000`
-
-## Estructura del Proyecto
-
-```
-src/
-├── components/
-│   ├── common/          # Componentes compartidos
-│   ├── layout/          # Layouts
-│   ├── podcast/         # Componentes de podcast
-│   └── episode/         # Componentes de episodio
-├── pages/               # Páginas principales
-├── services/            # Servicios de API y caché
-├── hooks/               # Custom hooks
-├── store/               # Estado global (Zustand)
-├── types/               # Tipos TypeScript
-├── utils/               # Utilidades
-├── App.tsx              # Componente raíz
-├── routes.tsx           # Configuración de rutas
-└── main.tsx             # Punto de entrada
-```
-
-## Rutas
-
-- `/` - Página principal con listado de podcasts
-- `/podcast/:podcastId` - Detalle del podcast y episodios
-- `/podcast/:podcastId/episode/:episodeId` - Detalle del episodio con reproductor
-
-## Tecnologías
-
-- **React 19** - Framework UI
-- **TypeScript** - Tipado estático
-- **Vite** - Build tool moderno
-- **React Router v7** - Enrutamiento SPA
-- **TanStack Query** - Gestión de datos y caché
-- **Zustand** - State management
-- **TailwindCSS** - Estilos
-- **Lucide React** - Iconos
-- **Axios** - Cliente HTTP
-
-## Principios de Arquitectura
-
-- **SOLID** - Principios de diseño orientado a objetos
-- **DRY** - Don't Repeat Yourself
-- **KISS** - Keep It Simple, Stupid
-- **Separation of Concerns** - Separación de responsabilidades
-- **Composition over Inheritance** - Composición sobre herencia
-
-## Versionado
-
-Este proyecto sigue [Conventional Commits](https://www.conventionalcommits.org/)
-
-## Licencia
-
-MIT

@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify'
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +7,7 @@ import { Button } from '@/shared/components/Button'
 import { PlayButton } from '@/shared/components/PlayButton'
 import { PodcastSidebar } from '@/features/podcasts/PodcastSidebar'
 import { usePodcastDetailQuery, usePodcastEpisodesQuery } from '@/features/podcasts/hooks'
+import { sanitizeHtml } from '@/shared/utils/sanitizer'
 
 function formatDuration(ms?: number): string {
   if (!ms || ms <= 0) return '—'
@@ -27,8 +27,7 @@ export function EpisodeDetailPage() {
 
   const episode = useMemo(() => episodes.find((e) => e.id === episodeId), [episodes, episodeId])
   const sanitized = useMemo(() => {
-    const html = episode?.description ?? ''
-    return DOMPurify.sanitize(html)
+    return sanitizeHtml(episode?.description ?? '')
   }, [episode?.description])
 
   if (isLoading || !podcast) {

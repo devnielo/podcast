@@ -4,6 +4,8 @@ export interface PodcastSummary {
   author: string
   imageUrl: string
   summary?: string
+  category?: string
+  releaseLabel?: string
 }
 
 export interface PodcastDetail extends PodcastSummary {

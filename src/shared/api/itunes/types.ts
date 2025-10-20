@@ -10,8 +10,10 @@ export interface ItunesTopPodcastEntry {
   title?: { label?: string }
   summary?: { label?: string }
   'im:name'?: { label?: string }
-  'im:artist'?: { label?: string }
+  'im:artist'?: { label?: string; attributes?: { href?: string } }
   'im:image'?: ItunesImage[]
+  category?: { attributes?: { term?: string; label?: string } }
+  'im:releaseDate'?: { label?: string; attributes?: { label?: string } }
 }
 
 export interface ItunesTopPodcastsResponse {

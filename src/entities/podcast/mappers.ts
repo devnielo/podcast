@@ -34,6 +34,8 @@ export function mapTopPodcastsResponse(response: ItunesTopPodcastsResponse): Pod
         author: entry['im:artist']?.label ?? 'Unknown author',
         imageUrl: pickImage(entry['im:image']),
         summary: entry.summary?.label,
+        category: entry.category?.attributes?.label ?? 'Unknown category',
+        releaseLabel: entry['im:releaseDate']?.attributes?.label ?? entry['im:releaseDate']?.label,
       } satisfies PodcastSummary
     })
     .filter(Boolean) as PodcastSummary[]

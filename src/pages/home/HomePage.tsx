@@ -1,12 +1,12 @@
 import { Search } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useIsFetching } from '@tanstack/react-query'
 
-import { mapTopPodcastsResponse } from '@/entities/podcast/mappers'
 import type { PodcastSummary } from '@/entities/podcast/types'
-import type { ItunesTopPodcastsResponse } from '@/shared/api/itunes/types'
 import { PodcastCard } from '@/shared/components/PodcastCard'
 import Button from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
+import { useTopPodcasts } from '@/features/podcasts'
 
 interface FeaturedPodcast extends PodcastSummary {
   summary: string
@@ -14,393 +14,71 @@ interface FeaturedPodcast extends PodcastSummary {
   category: string
 }
 
-const MOCK_TOP_PODCASTS_FEED: ItunesTopPodcastsResponse = {
-  feed: {
-    entry: [
-      {
-        id: { attributes: { 'im:id': '1535809341' } },
-        title: { label: 'The Joe Budden Podcast - The Joe Budden Network' },
-        summary: {
-          label:
-            'Tune into Joe Budden y sus amigos. Acompaña las aventuras y debates crudos de este panel sobre cultura pop e hip-hop.',
-        },
-        'im:name': { label: 'The Joe Budden Podcast' },
-        'im:artist': { label: 'The Joe Budden Network' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts113/v4/f2/21/fa/f221fabd-017f-5125-633b-f1fe4f39802a/mza_182995249085044287.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts113/v4/f2/21/fa/f221fabd-017f-5125-633b-f1fe4f39802a/mza_182995249085044287.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts113/v4/f2/21/fa/f221fabd-017f-5125-633b-f1fe4f39802a/mza_182995249085044287.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-10-17T19:00:00-07:00',
-          attributes: { label: 'October 17, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1751194045' } },
-        title: { label: "Tony Mantor's : Almost Live.. Nashville" },
-        summary: {
-          label:
-            'Nashville-based veteran producer Tony Mantor comparte conversaciones profundas con artistas sobre cultura y entretenimiento.',
-        },
-        'im:name': { label: "Tony Mantor's : Almost Live.. Nashville" },
-        'im:artist': { label: 'Tony Mantor' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3e/e4/59/3ee459ec-ca6a-8963-06a4-360f3059876c/mza_2940575243774001153.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3e/e4/59/3ee459ec-ca6a-8963-06a4-360f3059876c/mza_2940575243774001153.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3e/e4/59/3ee459ec-ca6a-8963-06a4-360f3059876c/mza_2940575243774001153.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music Interviews', label: 'Music Interviews' } },
-        'im:releaseDate': {
-          label: '2025-10-07T15:00:00-07:00',
-          attributes: { label: 'October 7, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1825201502' } },
-        title: { label: 'Decoding Taylor Swift - Joe Romm and Toni Romm' },
-        summary: {
-          label:
-            'Joe y Toni Romm desmenuzan las letras y estrategias narrativas que han hecho de Taylor Swift un fenómeno global.',
-        },
-        'im:name': { label: 'Decoding Taylor Swift' },
-        'im:artist': { label: 'Joe Romm and Toni Romm' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/29/4d/9d/294d9d26-4204-4675-9ca6-613f50e26609/mza_1960016062812587976.jpeg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/29/4d/9d/294d9d26-4204-4675-9ca6-613f50e26609/mza_1960016062812587976.jpeg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/29/4d/9d/294d9d26-4204-4675-9ca6-613f50e26609/mza_1960016062812587976.jpeg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music Commentary', label: 'Music Commentary' } },
-        'im:releaseDate': {
-          label: '2025-10-14T06:55:00-07:00',
-          attributes: { label: 'October 14, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1703080557' } },
-        title: { label: 'Music Saved Me Podcast - iHeartPodcasts' },
-        summary: {
-          label:
-            'Historias sobre cómo la música impacta la salud mental, con artistas que encuentran refugio en el arte.',
-        },
-        'im:name': { label: 'Music Saved Me Podcast' },
-        'im:artist': { label: 'iHeartPodcasts' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/c3/e7/43/c3e74308-bd36-73b6-bde8-12a2b8847c32/mza_7335659604130995475.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/c3/e7/43/c3e74308-bd36-73b6-bde8-12a2b8847c32/mza_7335659604130995475.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/c3/e7/43/c3e74308-bd36-73b6-bde8-12a2b8847c32/mza_7335659604130995475.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music Interviews', label: 'Music Interviews' } },
-        'im:releaseDate': {
-          label: '2025-10-19T00:00:00-07:00',
-          attributes: { label: 'October 19, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1572182022' } },
-        title: { label: 'New Rory & MAL - iHeartPodcasts and The Volume' },
-        summary: {
-          label:
-            'Nuevas historias, risas y opiniones sin filtro desde Nueva York con Rory, MAL y sus invitados sorpresa.',
-        },
-        'im:name': { label: 'New Rory & MAL' },
-        'im:artist': { label: 'iHeartPodcasts and The Volume' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/8c/b7/fb/8cb7fb9e-ad6c-25db-3019-bb3e42a1418a/mza_10391427218211947909.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/8c/b7/fb/8cb7fb9e-ad6c-25db-3019-bb3e42a1418a/mza_10391427218211947909.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/8c/b7/fb/8cb7fb9e-ad6c-25db-3019-bb3e42a1418a/mza_10391427218211947909.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-10-19T01:00:00-07:00',
-          attributes: { label: 'October 19, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1636001234' } },
-        title: { label: 'Dem Vinyl Boyz - Podcast Playground' },
-        summary: {
-          label:
-            'Celebración analógica del soul, funk y hip-hop con datos coleccionistas y mezclas en vinilo.',
-        },
-        'im:name': { label: 'Dem Vinyl Boyz' },
-        'im:artist': { label: 'Podcast Playground' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/0e/42/f6/0e42f616-ec92-0583-071d-8ad604165a46/mza_6813945298084218940.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/0e/42/f6/0e42f616-ec92-0583-071d-8ad604165a46/mza_6813945298084218940.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/0e/42/f6/0e42f616-ec92-0583-071d-8ad604165a46/mza_6813945298084218940.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music Commentary', label: 'Music Commentary' } },
-        'im:releaseDate': {
-          label: '2025-10-16T14:00:00-07:00',
-          attributes: { label: 'October 16, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '788236947' } },
-        title: { label: 'Song Exploder - Hrishikesh Hirway' },
-        summary: {
-          label:
-            'Cada episodio desmonta una canción con relatos íntimos y decisiones creativas de los artistas.',
-        },
-        'im:name': { label: 'Song Exploder' },
-        'im:artist': { label: 'Hrishikesh Hirway' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/05/7b/35/057b3588-c74c-0334-d8ef-c6b8166d4afc/mza_12324100546486323942.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/05/7b/35/057b3588-c74c-0334-d8ef-c6b8166d4afc/mza_12324100546486323942.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/05/7b/35/057b3588-c74c-0334-d8ef-c6b8166d4afc/mza_12324100546486323942.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-10-15T06:30:00-07:00',
-          attributes: { label: 'October 15, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1275172907' } },
-        title: { label: 'DISGRACELAND - Double Elvis Productions' },
-        summary: {
-          label:
-            'Relatos de true crime musical que revelan el caos detrás de iconos de la música.',
-        },
-        'im:name': { label: 'DISGRACELAND' },
-        'im:artist': { label: 'Double Elvis Productions' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3c/db/14/3cdb1400-5990-c22d-9bb9-a8c4df028f40/mza_9064738222575760330.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3c/db/14/3cdb1400-5990-c22d-9bb9-a8c4df028f40/mza_9064738222575760330.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/3c/db/14/3cdb1400-5990-c22d-9bb9-a8c4df028f40/mza_9064738222575760330.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-10-19T00:00:00-07:00',
-          attributes: { label: 'October 19, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1703570820' } },
-        title: { label: 'Eras - BBC Radio 2' },
-        summary: {
-          label:
-            'Bill Bailey repasa la historia de Queen con testimonios inéditos de Brian May y Roger Taylor.',
-        },
-        'im:name': { label: 'Eras' },
-        'im:artist': { label: 'BBC Radio 2' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/2a/4e/29/2a4e29ad-0b3c-fb2d-c991-a92c4bba4d9f/mza_17833981376332336777.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/2a/4e/29/2a4e29ad-0b3c-fb2d-c991-a92c4bba4d9f/mza_17833981376332336777.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/2a/4e/29/2a4e29ad-0b3c-fb2d-c991-a92c4bba4d9f/mza_17833981376332336777.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music History', label: 'Music History' } },
-        'im:releaseDate': {
-          label: '2025-10-12T00:00:00-07:00',
-          attributes: { label: 'October 12, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '1812462068' } },
-        title: { label: 'Joe and Jada - iHeartPodcasts and The Volume' },
-        summary: {
-          label:
-            'Fat Joe y Jadakiss comparten anécdotas sobre hip-hop, negocios y cultura urbana en estado puro.',
-        },
-        'im:name': { label: 'Joe and Jada' },
-        'im:artist': { label: 'iHeartPodcasts and The Volume' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d4/d2/72/d4d27258-65ec-e139-9ccd-41036f4813da/mza_7673522444412362355.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d4/d2/72/d4d27258-65ec-e139-9ccd-41036f4813da/mza_7673522444412362355.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d4/d2/72/d4d27258-65ec-e139-9ccd-41036f4813da/mza_7673522444412362355.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-10-16T03:00:00-07:00',
-          attributes: { label: 'October 16, 2025' },
-        },
-      },
-      {
-        id: { attributes: { 'im:id': '788236940' } },
-        title: { label: 'Questlove Supreme - iHeartPodcasts' },
-        summary: {
-          label:
-            'Questlove conversa con leyendas y héroes anónimos de la música para preservar la historia oral del groove.',
-        },
-        'im:name': { label: 'Questlove Supreme' },
-        'im:artist': { label: 'iHeartPodcasts' },
-        'im:image': [
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d9/20/5c/d9205c3b-676f-6c68-35f4-1f22883c6bfc/mza_3389063600571555044.jpg/55x55bb.png',
-            attributes: { height: '55' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d9/20/5c/d9205c3b-676f-6c68-35f4-1f22883c6bfc/mza_3389063600571555044.jpg/60x60bb.png',
-            attributes: { height: '60' },
-          },
-          {
-            label:
-              'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/d9/20/5c/d9205c3b-676f-6c68-35f4-1f22883c6bfc/mza_3389063600571555044.jpg/170x170bb.png',
-            attributes: { height: '170' },
-          },
-        ],
-        category: { attributes: { term: 'Music', label: 'Music' } },
-        'im:releaseDate': {
-          label: '2025-06-15T16:15:00-07:00',
-          attributes: { label: 'June 15, 2025' },
-        },
-      },
-    ],
-  },
-}
 
-const FILTER_TABS = [
-  { id: 'all', label: 'Todo' },
-  { id: 'music', label: 'Música' },
-  { id: 'shows', label: 'Podcasts' },
-] as const satisfies readonly { id: 'all' | 'music' | 'shows'; label: string }[]
-
-type FilterTabId = (typeof FILTER_TABS)[number]['id']
+const CATEGORY_MAX = 4
 
 export function HomePage() {
-  const parsedFeed = mapTopPodcastsResponse(MOCK_TOP_PODCASTS_FEED)
-  const podcasts: FeaturedPodcast[] = parsedFeed.map((podcast) => ({
-    ...podcast,
-    summary: podcast.summary ?? '',
-    category: podcast.category ?? 'Music',
-    releaseLabel: podcast.releaseLabel ?? 'Sin fecha',
-  }))
+  const { data, isLoading, isError } = useTopPodcasts()
+  const isFetching = useIsFetching() > 0
+  const podcasts: FeaturedPodcast[] = useMemo(
+    () =>
+      (data ?? []).map((podcast) => ({
+        ...podcast,
+        summary: podcast.summary ?? '',
+        category: podcast.category ?? 'Music',
+        releaseLabel: podcast.releaseLabel ?? 'Sin fecha',
+      })),
+    [data],
+  )
 
-  const [filter, setFilter] = useState('')
-  const [activeTag, setActiveTag] = useState<FilterTabId>('all')
+  const [filter, setFilter] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '')
+  const [activeTag, setActiveTag] = useState<string>(() => new URLSearchParams(window.location.search).get('tag') ?? 'all')
+
+  const loading = isLoading && podcasts.length === 0
+  const showInitialSkeleton = (isLoading || isFetching) && podcasts.length === 0
+  const LOAD_STEP = 12
+  const [visibleCount, setVisibleCount] = useState(LOAD_STEP)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [allowEmpty, setAllowEmpty] = useState(false)
+  const filtersRef = useRef<HTMLDivElement | null>(null)
+  const [pinFilters, setPinFilters] = useState(false)
+  const [stickyTop, setStickyTop] = useState<number>(72)
+
+  const categoryCounts = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const p of podcasts) {
+      const key = (p.category ?? '').trim() || 'Other'
+      m.set(key, (m.get(key) ?? 0) + 1)
+    }
+    return m
+  }, [podcasts])
+
+  const topCategories = useMemo(() => {
+    return Array.from(categoryCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, CATEGORY_MAX)
+      .map(([name]) => name)
+  }, [categoryCounts])
+
+  const topSet = useMemo(() => new Set(topCategories.map((c) => c.toLowerCase())), [topCategories])
+
+  const tabs = useMemo(() => {
+    const total = podcasts.length
+    const top = topCategories.map((name) => ({ id: name, label: `${name} (${categoryCounts.get(name) ?? 0})` }))
+    const othersCount = total - topCategories.reduce((acc, name) => acc + (categoryCounts.get(name) ?? 0), 0)
+    const withOthers = othersCount > 0 ? [...top, { id: 'other', label: `Otros (${othersCount})` }] : top
+    return [{ id: 'all', label: `Todo (${total})` }, ...withOthers]
+  }, [podcasts.length, topCategories, categoryCounts])
 
   const matchesTag = useCallback(
     (podcast: FeaturedPodcast) => {
-      const category = (podcast.category ?? '').toLowerCase()
+      const raw = podcast.category ?? ''
+      const category = raw.toLowerCase()
       if (activeTag === 'all') return true
-      if (activeTag === 'music') return category.includes('music')
-      return !category.includes('music')
+      if (activeTag === 'other') return !topSet.has(category)
+      return category === activeTag.toLowerCase()
     },
-    [activeTag],
+    [activeTag, topSet],
   )
 
   const filteredPodcasts = useMemo(
@@ -422,6 +100,121 @@ export function HomePage() {
     [filteredPodcasts, matchesTag],
   )
 
+  useEffect(() => {
+    setVisibleCount(LOAD_STEP)
+  }, [filter, activeTag, data?.length])
+
+  // Gate empty state a bit to avoid flashing "no results" before data resolves from cache/network
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAllowEmpty(true), 900)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  // Measure Header height (app header is sticky top-0) and set sticky top accordingly
+  useEffect(() => {
+    function computeTop() {
+      const appHeader = document.querySelector('header.sticky') as HTMLElement | null
+      const h = appHeader?.offsetHeight ?? 72
+      setStickyTop(h)
+    }
+    computeTop()
+    window.addEventListener('resize', computeTop)
+    return () => window.removeEventListener('resize', computeTop)
+  }, [])
+
+  // After data/filter changes, if the content is shorter than viewport, auto-load more until it fills or we reach the end
+  useEffect(() => {
+    if (loading || isError) return
+    let iterations = 0
+    function needsMore(): boolean {
+      const docH = document.documentElement.scrollHeight
+      const viewportH = window.innerHeight
+      return docH < viewportH + 200 && visibleCount < visiblePodcasts.length
+    }
+    while (needsMore() && iterations < 5) {
+      iterations += 1
+      setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))
+    }
+  }, [loading, isError, visibleCount, visiblePodcasts.length])
+
+  // Sync filter and tag with URL (querystring)
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    if (filter) sp.set('q', filter)
+    else sp.delete('q')
+    if (activeTag && activeTag !== 'all') sp.set('tag', activeTag)
+    else sp.delete('tag')
+    const qs = sp.toString()
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ''}`
+    window.history.replaceState(null, '', next)
+  }, [filter, activeTag])
+
+  // Update state on browser navigation
+  useEffect(() => {
+    function onPop() {
+      const sp = new URLSearchParams(window.location.search)
+      setFilter(sp.get('q') ?? '')
+      setActiveTag(sp.get('tag') ?? 'all')
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  // Pin as soon as the header would overlap the filters row
+  useEffect(() => {
+    function onScroll() {
+      const el = filtersRef.current
+      if (!el) return
+      const top = el.getBoundingClientRect().top
+      // Add small cushion so it appears just before overlapping
+      setPinFilters(top <= stickyTop + 4)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [stickyTop])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry.isIntersecting && !loading) {
+          setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))
+        }
+      },
+      { root: null, rootMargin: '800px 0px', threshold: 0 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loading, visiblePodcasts.length, LOAD_STEP])
+
+  // Clamp to available items in case of overshoot
+  useEffect(() => {
+    setVisibleCount((prev) => Math.min(prev, visiblePodcasts.length || 0))
+  }, [visiblePodcasts.length])
+
+  // Fallback: in case IntersectionObserver doesn't fire (some browsers/edge cases)
+  useEffect(() => {
+    function onScroll() {
+      if (loading) return
+      const scrollY = window.scrollY || window.pageYOffset
+      const viewportH = window.innerHeight
+      const docH = document.documentElement.scrollHeight
+      const nearBottom = scrollY + viewportH >= docH - 800
+      if (nearBottom) {
+        setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [loading, visiblePodcasts.length, LOAD_STEP])
+
   return (
     <div className="space-y-12">
       <header className="space-y-8">
@@ -435,9 +228,22 @@ export function HomePage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {FILTER_TABS.map((tab) => {
-            const active = activeTag === tab.id
+        <div
+          ref={filtersRef}
+          className="flex flex-wrap items-center gap-3"
+          role="tablist"
+          aria-label="Filtros"
+          onKeyDown={(e) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+            e.preventDefault()
+            const ids = tabs.map((t) => t.id)
+            const idx = Math.max(0, ids.findIndex((id) => id.toLowerCase() === activeTag.toLowerCase()))
+            const nextIdx = e.key === 'ArrowLeft' ? (idx - 1 + ids.length) % ids.length : (idx + 1) % ids.length
+            setActiveTag(ids[nextIdx])
+          }}
+        >
+          {tabs.map((tab) => {
+            const active = activeTag.toLowerCase() === tab.id.toLowerCase()
             return (
               <Button
                 key={tab.id}
@@ -445,6 +251,9 @@ export function HomePage() {
                 onClick={() => setActiveTag(tab.id)}
                 variant={active ? 'primary' : 'secondary'}
                 size="sm"
+                role="tab"
+                aria-selected={active}
+                tabIndex={active ? 0 : -1}
               >
                 {tab.label}
               </Button>
@@ -453,7 +262,7 @@ export function HomePage() {
 
           <div className="ml-auto flex w-full flex-wrap items-center gap-3 sm:w-auto">
             <div className="text-xs uppercase tracking-[0.35em] text-dark-text-secondary shrink-0">
-              {visiblePodcasts.length} resultados
+              {showInitialSkeleton ? 'Cargando…' : `${Math.min(visibleCount, visiblePodcasts.length)}/${visiblePodcasts.length} resultados`}
             </div>
             <div className="relative ml-auto w-full min-w-0 sm:w-auto sm:min-w-[280px] md:min-w-[340px] lg:min-w-[380px] max-w-md">
               <Input
@@ -469,21 +278,121 @@ export function HomePage() {
         </div>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {visiblePodcasts.map((podcast) => (
-          <PodcastCard
-            key={podcast.id}
-            title={podcast.title}
-            author={podcast.author}
-            summary={podcast.summary}
-            longSummary={[podcast.summary, podcast.summary, podcast.summary].filter(Boolean).join(' ')}
-            releaseLabel={podcast.releaseLabel}
-            imageUrl={podcast.imageUrl}
-          />
-        ))}
-      </section>
+      {/* Compact floating filters under the header (smooth show/hide) — fixed, full-width */}
+      {!showInitialSkeleton && (
+        <div
+          className={`fixed left-0 right-0 z-40 border-b border-dark-border/40 bg-dark-surface/90 backdrop-blur transition-all duration-300 ease-out ${
+            pinFilters ? 'opacity-100 translate-y-0 shadow-[0_10px_20px_rgba(0,0,0,0.35)]' : 'opacity-0 -translate-y-2 pointer-events-none'
+          }`}
+          style={{ top: 41, width: '100%' }}
+          aria-hidden={!pinFilters}
+        >
+          <div className="mx-auto flex w-full max-w-screen-2xl items-center gap-3 px-6 py-2">
+            <div className="flex-1 overflow-x-auto">
+              <div
+                className="flex items-center gap-2 min-w-max"
+                role="tablist"
+                aria-label="Filtros"
+                onKeyDown={(e) => {
+                  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+                  e.preventDefault()
+                  const ids = tabs.map((t) => t.id)
+                  const idx = Math.max(0, ids.findIndex((id) => id.toLowerCase() === activeTag.toLowerCase()))
+                  const nextIdx = e.key === 'ArrowLeft' ? (idx - 1 + ids.length) % ids.length : (idx + 1) % ids.length
+                  setActiveTag(ids[nextIdx])
+                }}
+              >
+                {tabs.map((tab) => {
+                  const active = activeTag.toLowerCase() === tab.id.toLowerCase()
+                  return (
+                    <Button
+                      key={`compact-${tab.id}`}
+                      type="button"
+                      onClick={() => setActiveTag(tab.id)}
+                      variant={active ? 'primary' : 'secondary'}
+                      size="sm"
+                      role="tab"
+                      aria-selected={active}
+                      tabIndex={active ? 0 : -1}
+                    >
+                      {tab.label}
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-3">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-dark-text-secondary">
+                {`${Math.min(visibleCount, visiblePodcasts.length)}/${visiblePodcasts.length}`}
+              </span>
+              <div className="relative w-[260px]">
+                <Input
+                  type="text"
+                  placeholder="Filtrar…"
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value)}
+                  size="sm"
+                  rightIcon={<Search className="h-4 w-4" strokeWidth={1.5} />}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {visiblePodcasts.length === 0 && (
+      {/* Side rail removed for Spotify-like top compact bar on all sizes */}
+
+      {/* Removed extra skeleton strip to avoid layout shift under the editorial block */}
+
+      {showInitialSkeleton ? (
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="h-[550px] rounded-3xl bg-dark-card shimmer"
+            />
+          ))}
+        </section>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
+          <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
+          <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">Error al cargar podcasts</h3>
+          <p className="text-sm text-dark-text-secondary">Intenta de nuevo en unos segundos.</p>
+        </div>
+      ) : (
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {visiblePodcasts.slice(0, visibleCount).map((podcast) => (
+            <PodcastCard
+              key={podcast.id}
+              title={podcast.title}
+              author={podcast.author}
+              summary={podcast.summary}
+              longSummary={[podcast.summary, podcast.summary, podcast.summary].filter(Boolean).join(' ')}
+              releaseLabel={podcast.releaseLabel}
+              imageUrl={podcast.imageUrl}
+            />
+          ))}
+          {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
+            <div ref={sentinelRef} className="md:col-span-2 xl:col-span-3 h-4 w-full" />
+          )}
+        </section>
+      )}
+
+      {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
+        <div className="mt-4 flex justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={() => setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))}
+          >
+            Cargar más
+          </Button>
+        </div>
+      )}
+
+      {/* Empty states only after real data exists */}
+      {!showInitialSkeleton && allowEmpty && !isError && visiblePodcasts.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
           <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
           <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">No se encontraron podcasts</h3>

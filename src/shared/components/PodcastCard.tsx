@@ -1,5 +1,5 @@
 import { MoreHorizontal, Play, Plus } from 'lucide-react'
-import { useId, useState, type ReactNode, type MouseEvent, type CSSProperties } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode, type MouseEvent, type CSSProperties } from 'react'
 
 import type { ToastTone } from '@/shared/components/Toast'
 import { useToast } from '@/shared/hooks/useToast'
@@ -8,7 +8,8 @@ import Button from './Button'
 const CARD_HEIGHT = 550
 const COVER_SIZE = 230
 const SUMMARY_STEP = 3
-const SUMMARY_MAX = 10
+const SUMMARY_MAX = 11
+const SUMMARY_HARD_LIMIT = 11
 
 interface PodcastCardProps {
   title: string
@@ -41,6 +42,7 @@ export function PodcastCard({
   const [expanded, setExpanded] = useState(false)
   const [visibleLines, setVisibleLines] = useState(SUMMARY_STEP)
   const summaryId = useId()
+  const summaryRef = useRef<HTMLParagraphElement | null>(null)
 
   const notify = (label: string, tone: ToastTone = 'info', icon?: ReactNode) => {
     pushToast({
@@ -64,7 +66,7 @@ export function PodcastCard({
     // Toggle inmediato: primera pulsación expande y oculta portada
     const next = !expanded
     setExpanded(next)
-    setVisibleLines(next ? SUMMARY_MAX : SUMMARY_STEP)
+    setVisibleLines(next ? Math.min(SUMMARY_MAX, SUMMARY_HARD_LIMIT) : SUMMARY_STEP)
   }
 
   function handlePlayClick(event: MouseEvent<HTMLButtonElement>) {
@@ -80,6 +82,11 @@ export function PodcastCard({
     notify(actionLabel, tone, icon)
   }
 
+  useEffect(() => {
+    const el = summaryRef.current
+    if (!el) return
+  }, [expanded, visibleLines, summary, longSummary])
+
   return (
     <article className="group relative block">
       <div
@@ -87,7 +94,7 @@ export function PodcastCard({
         style={{ height: CARD_HEIGHT }}
       >
 
-        <div className="relative z-10 flex flex-col">
+        <div className="relative z-10 flex flex-col pb-24 md:pb-28">
           {/* Cabecera: título y subtítulo */}
           <div className="space-y-1">
             <a href={href} className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
@@ -148,22 +155,23 @@ export function PodcastCard({
               <div className="relative">
                 <p
                   id={summaryId}
-                  className={`${expanded ? 'overflow-hidden pr-1' : 'overflow-hidden'} break-words text-base text-dark-text-primary/85`}
-                  style={
-                    expanded
-                      ? undefined
-                      : ({ display: '-webkit-box', WebkitLineClamp: visibleLines, WebkitBoxOrient: 'vertical' } as CSSProperties)
-                  }
+                  ref={summaryRef}
+                  className={`overflow-hidden break-words text-base text-dark-text-primary/85 pr-1`}
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: expanded ? SUMMARY_HARD_LIMIT : Math.min(visibleLines, SUMMARY_HARD_LIMIT),
+                    WebkitBoxOrient: 'vertical',
+                  } as CSSProperties}
                 >
                   {expanded && longSummary ? longSummary : summary}
                 </p>
-                <div className="flex justify-end">
+                <div className="flex justify-end mt-1">
                   <button
                     type="button"
                     onClick={handleMoreClick}
                     aria-expanded={expanded}
                     aria-controls={summaryId}
-                    className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80 hover:underline hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                    className="absolute -bottom-4 right-0 text-xs font-semibold uppercase tracking-[0.22em] text-white/90 hover:underline hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   >
                     {expanded ? 'Mostrar menos' : 'Mostrar más'}
                   </button>
@@ -177,7 +185,7 @@ export function PodcastCard({
 
 
         {/* Controles emergentes desde la parte no visible (abajo) */}
-        <div className="pointer-events-none absolute bottom-6 left-8 right-8 z-20">
+        <div className="pointer-events-none absolute bottom-4 left-8 right-8 z-20">
           <div className="flex items-center gap-3 translate-y-6 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 pointer-events-auto">
             <Button
               type="button"

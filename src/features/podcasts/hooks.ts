@@ -24,6 +24,13 @@ export function useTopPodcastsQuery(
   })
 }
 
+// Convenience hook matching existing usage in HomePage
+export function useTopPodcasts(
+  options?: Omit<UseQueryOptions<PodcastSummary[], Error>, 'queryKey' | 'queryFn'>,
+) {
+  return useTopPodcastsQuery(options)
+}
+
 export function usePodcastLookupQuery<TResult = PodcastDetailDTO>(
   podcastId: string,
   options?: LookupOptions<TResult>,

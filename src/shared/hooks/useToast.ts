@@ -1,4 +1,4 @@
-import { useToastContext } from '@/app/providers/ToastProvider'
+import { useToastContext } from '@/app/providers/useToastHook'
 
 export function useToast() {
   const toastContext = useToastContext()

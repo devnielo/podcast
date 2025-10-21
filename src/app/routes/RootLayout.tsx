@@ -3,6 +3,7 @@ import { Outlet, useNavigation } from 'react-router-dom'
 
 import { AppLayout } from '@/app/layout/AppLayout'
 import { Header } from '@/app/layout/Header'
+import { AudioPlayer } from '@/shared/components/AudioPlayer'
 
 export function RootLayout() {
   const navigation = useNavigation()
@@ -13,7 +14,10 @@ export function RootLayout() {
   const showIndicator = isNavigating || isFetching
 
   return (
-    <AppLayout header={<Header showIndicator={showIndicator} />}>
+    <AppLayout
+      header={<Header showIndicator={showIndicator} />}
+      player={<AudioPlayer />}
+    >
       <Outlet />
     </AppLayout>
   )

@@ -1,7 +1,7 @@
 import { Play } from 'lucide-react'
 import { Button } from '@/shared/components/Button'
-import { usePlayer } from '@/app/providers/PlayerProvider'
 import type { CurrentEpisode } from '@/app/providers/PlayerProvider'
+import { usePlayer } from '@/app/providers/usePlayerHook'
 
 interface PlayButtonProps {
   episode: Omit<CurrentEpisode, 'podcastId'>

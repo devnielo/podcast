@@ -38,6 +38,8 @@ export function usePodcastLookupQuery<TResult = PodcastDetailDTO>(
   return useQuery<PodcastDetailDTO, Error, TResult, DetailQueryKey>({
     queryKey: QUERY_KEYS.podcastDetail(podcastId),
     queryFn: () => fetchPodcastDetail(podcastId),
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
     ...options,
   })
 }
@@ -48,6 +50,8 @@ export function usePodcastDetailQuery(
 ) {
   return usePodcastLookupQuery(podcastId, {
     select: (data) => data.podcast,
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
     ...options,
   })
 }
@@ -58,6 +62,8 @@ export function usePodcastEpisodesQuery(
 ) {
   return usePodcastLookupQuery(podcastId, {
     select: (data) => data.episodes,
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
     ...options,
   })
 }

@@ -5,6 +5,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { ToastProvider } from '@/app/providers/ToastProvider'
+import { PlayerProvider } from '@/app/providers/PlayerProvider'
 import { createQueryClient } from '@/app/providers/queryClient'
 import { createBrowserPersister } from '@/shared/cache/persister'
 import { CACHE_TTL_MS } from '@/shared/config/api'
@@ -23,8 +24,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     return (
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          {children}
-          {devtools}
+          <PlayerProvider>
+            {children}
+            {devtools}
+          </PlayerProvider>
         </ToastProvider>
       </QueryClientProvider>
     )
@@ -37,8 +40,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     >
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          {children}
-          {devtools}
+          <PlayerProvider>
+            {children}
+            {devtools}
+          </PlayerProvider>
         </ToastProvider>
       </QueryClientProvider>
     </PersistQueryClientProvider>

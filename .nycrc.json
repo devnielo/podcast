@@ -1,0 +1,15 @@
+{
+  "all": true,
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*.d.ts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/index.ts",
+    "src/main.tsx",
+    "src/App.tsx"
+  ],
+  "reporter": ["text", "html", "json"],
+  "report-dir": "./coverage",
+  "temp-dir": "./.nyc_output"
+}

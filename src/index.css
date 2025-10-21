@@ -22,6 +22,9 @@
   font-family: 'Monument Grotesk', system-ui, -apple-system, sans-serif;
 }
 
+* {
+  font-family: 'Monument Grotesk', system-ui, -apple-system, sans-serif;
+}
 body {
   @apply min-h-screen bg-dark-bg text-dark-text-primary antialiased font-sans;
 }

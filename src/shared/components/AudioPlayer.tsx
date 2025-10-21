@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
-import { usePlayer } from '@/app/providers/PlayerProvider'
+import { usePlayer } from '@/app/providers/usePlayerHook'
 import { getCorsProxyUrl } from '@/shared/api/cors-proxies'
 
 function formatDuration(seconds: number): string {
@@ -167,12 +167,12 @@ export function AudioPlayer() {
                   max="1"
                   step="0.01"
                   value={volume}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVolume(parseFloat(e.target.value))}
                   className="w-20 h-1 bg-dark-border rounded-full appearance-none cursor-pointer accent-brand-500 vertical-slider"
                   aria-label="Volume control"
                   style={{
                     writingMode: 'bt-lr',
-                  } as any}
+                  } as unknown as React.CSSProperties}
                 />
               </div>
             )}

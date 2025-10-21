@@ -33,7 +33,7 @@ Single Page Application (SPA) para escuchar podcasts musicales. Aplicación desa
 
 ```bash
 # 1. Clonar repositorio
-git clone <repository-url>
+git clone https://github.com/devnielo/podcast.git
 cd podcast
 
 # 2. Instalar dependencias

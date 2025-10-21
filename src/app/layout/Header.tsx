@@ -18,9 +18,8 @@ export function Header({ showIndicator = false }: HeaderProps) {
       <header className="sticky top-0 z-50 border-b border-dark-border/40 bg-dark-surface/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-8 px-6 py-4">
           <NavLink to="/" className="flex items-center">
-            <span className="text-4xl uppercase font-semibold tracking-tight text-dark-text-primary">Podcas</span>
             <img src={logoUrl} alt="Podcaster" className="h-12 w-auto" />
-            <span className="text-4xl uppercase font-semibold tracking-tight text-dark-text-primary">er</span>
+            <span className="text-5xl uppercase font-semibold tracking-tight text-dark-text-primary">Podcaster</span>
           </NavLink>
 
           <div className="flex flex-1 items-center justify-center gap-4">

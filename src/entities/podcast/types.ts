@@ -12,4 +12,5 @@ export interface PodcastDetail extends PodcastSummary {
   description?: string
   totalEpisodes: number
   feedUrl?: string
+  collectionViewUrl?: string
 }

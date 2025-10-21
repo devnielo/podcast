@@ -57,10 +57,12 @@ export async function fetchJsonSmart<T>(url: string, init?: RequestInit, opts: F
     timeoutProxyMs = 8000,
     tryDirectFirst = true,
     proxies = [
-      // AllOrigins RAW
+      // AllOrigins RAW (most reliable)
       'https://api.allorigins.win/raw?url=',
-      // Isomorphic-git CORS proxy
-      'https://cors.isomorphic-git.org/',
+      // CORS Anywhere
+      'https://cors-anywhere.herokuapp.com/',
+      // AllOrigins GET wrapper (fallback)
+      'https://api.allorigins.win/get?url=',
     ],
   } = opts
 
@@ -68,7 +70,9 @@ export async function fetchJsonSmart<T>(url: string, init?: RequestInit, opts: F
   if (tryDirectFirst) {
     try {
       return await tryFetchJson<T>(url, init, timeoutDirectMs)
-    } catch {}
+    } catch {
+      // Fallback to proxies if direct fetch fails
+    }
   }
 
   // 2) Race proxies to minimize slow proxy tail latencies
@@ -83,5 +87,15 @@ export async function fetchJsonSmart<T>(url: string, init?: RequestInit, opts: F
   })
 
   // Prefer the first fulfilled result
-  return await Promise.any(proxyPromises)
+  try {
+    return await Promise.any(proxyPromises)
+  } catch (err) {
+    const errors = err instanceof AggregateError ? err.errors : [err]
+    const errorMessages = errors.map((e: unknown) => {
+      if (e instanceof Error) return e.message
+      return String(e)
+    }).join('; ')
+    console.error('All CORS proxies failed:', { url, errors: errorMessages })
+    throw new Error(`All CORS proxies failed for ${url}: ${errorMessages}`)
+  }
 }

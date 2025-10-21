@@ -10,6 +10,13 @@ import type { PodcastDetail, PodcastSummary } from './types'
 
 const FALLBACK_IMAGE = 'https://placehold.co/512x512?text=Podcast'
 
+function wrapWithCorsProxy(url?: string): string | undefined {
+  if (!url) return undefined
+  // Try direct URL first (some servers allow CORS)
+  // If it fails, the browser will try the fallback proxies
+  return url
+}
+
 function pickImage(images?: ItunesTopPodcastEntry['im:image']) {
   if (!images?.length) return FALLBACK_IMAGE
 
@@ -55,6 +62,7 @@ function mapPodcastResult(result: ItunesPodcastResult): PodcastDetail | undefine
     summary: result.description ?? result.longDescription,
     totalEpisodes: result.trackCount ?? 0,
     feedUrl: result.feedUrl,
+    collectionViewUrl: result.collectionViewUrl,
   }
 }
 
@@ -62,13 +70,15 @@ function mapEpisodeResult(result: ItunesPodcastEpisodeResult): Episode | undefin
   const id = String(result.trackId ?? result.episodeGuid ?? '')
   if (!id) return undefined
 
+  const audioUrl = result.episodeUrl ?? result.previewUrl
+
   return {
     id,
     title: result.trackName ?? 'Sin título',
     description: result.description ?? result.shortDescription,
     releaseDate: result.releaseDate,
     durationMs: result.trackTimeMillis,
-    audioUrl: result.episodeUrl ?? result.previewUrl,
+    audioUrl: wrapWithCorsProxy(audioUrl),
     episodeUrl: result.trackViewUrl,
   }
 }

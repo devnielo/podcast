@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode, MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 
 import { Toast } from '@/shared/components/Toast'
 import type { ToastTone } from '@/shared/components/Toast'
+import { ToastContext, type ToastContextValue } from './ToastContext'
 
 interface ToastProviderProps {
   children: ReactNode
@@ -28,12 +29,6 @@ interface ToastEntry extends ToastOptions {
   id: string
 }
 
-interface ToastContextValue {
-  pushToast: (options: ToastOptions) => string
-  dismissToast: (id: string) => void
-  clearToasts: () => void
-}
-
 const DEFAULT_DURATION = 4000
 
 function generateToastId() {
@@ -42,8 +37,6 @@ function generateToastId() {
   }
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
-
-const ToastContext = createContext<ToastContextValue | undefined>(undefined)
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastEntry[]>([])
@@ -143,12 +136,4 @@ export function ToastProvider({ children }: ToastProviderProps) {
         : null}
     </ToastContext.Provider>
   )
-}
-
-export function useToastContext() {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToastContext must be used within a ToastProvider')
-  }
-  return context
 }

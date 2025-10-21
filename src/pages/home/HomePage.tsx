@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useIsFetching } from '@tanstack/react-query'
 
 import type { PodcastSummary } from '@/entities/podcast/types'
@@ -18,6 +19,7 @@ interface FeaturedPodcast extends PodcastSummary {
 const CATEGORY_MAX = 4
 
 export function HomePage() {
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useTopPodcasts()
   const isFetching = useIsFetching() > 0
   const podcasts: FeaturedPodcast[] = useMemo(
@@ -216,8 +218,8 @@ export function HomePage() {
   }, [loading, visiblePodcasts.length, LOAD_STEP])
 
   return (
-    <div className="space-y-12">
-      <header className="space-y-8">
+    <div className="flex flex-col h-full gap-8">
+      <header className="space-y-8 shrink-0">
         <div className="space-y-3">
           <p className="text-xs uppercase tracking-[0.45em] text-dark-text-secondary">Selección Editorial</p>
           <h1 className="text-4xl font-semibold tracking-tight text-dark-text-primary lg:text-5xl">
@@ -340,65 +342,66 @@ export function HomePage() {
         </div>
       )}
 
-      {/* Side rail removed for Spotify-like top compact bar on all sizes */}
+      <section className="flex-1 overflow-y-auto space-y-12">
+        {showInitialSkeleton ? (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="h-[550px] rounded-3xl bg-dark-card shimmer"
+              />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
+            <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
+            <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">Error al cargar podcasts</h3>
+            <p className="text-sm text-dark-text-secondary">Intenta de nuevo en unos segundos.</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {visiblePodcasts.slice(0, visibleCount).map((podcast) => (
+                <PodcastCard
+                  key={podcast.id}
+                  title={podcast.title}
+                  author={podcast.author}
+                  summary={podcast.summary}
+                  longSummary={[podcast.summary, podcast.summary, podcast.summary].filter(Boolean).join(' ')}
+                  releaseLabel={podcast.releaseLabel}
+                  imageUrl={podcast.imageUrl}
+                  href={`/podcast/${podcast.id}`}
+                  onPlayClick={() => navigate(`/podcast/${podcast.id}`)}
+                />
+              ))}
+              {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
+                <div ref={sentinelRef} className="md:col-span-2 xl:col-span-3 h-4 w-full" />
+              )}
+            </div>
 
-      {/* Removed extra skeleton strip to avoid layout shift under the editorial block */}
+            {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
+              <div className="flex justify-center py-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))}
+                >
+                  Cargar más
+                </Button>
+              </div>
+            )}
 
-      {showInitialSkeleton ? (
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="h-[550px] rounded-3xl bg-dark-card shimmer"
-            />
-          ))}
-        </section>
-      ) : isError ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
-          <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
-          <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">Error al cargar podcasts</h3>
-          <p className="text-sm text-dark-text-secondary">Intenta de nuevo en unos segundos.</p>
-        </div>
-      ) : (
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {visiblePodcasts.slice(0, visibleCount).map((podcast) => (
-            <PodcastCard
-              key={podcast.id}
-              title={podcast.title}
-              author={podcast.author}
-              summary={podcast.summary}
-              longSummary={[podcast.summary, podcast.summary, podcast.summary].filter(Boolean).join(' ')}
-              releaseLabel={podcast.releaseLabel}
-              imageUrl={podcast.imageUrl}
-            />
-          ))}
-          {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
-            <div ref={sentinelRef} className="md:col-span-2 xl:col-span-3 h-4 w-full" />
-          )}
-        </section>
-      )}
-
-      {!showInitialSkeleton && visiblePodcasts.length > visibleCount && (
-        <div className="mt-4 flex justify-center">
-          <Button
-            type="button"
-            variant="secondary"
-            size="md"
-            onClick={() => setVisibleCount((prev) => Math.min(prev + LOAD_STEP, visiblePodcasts.length))}
-          >
-            Cargar más
-          </Button>
-        </div>
-      )}
-
-      {/* Empty states only after real data exists */}
-      {!showInitialSkeleton && allowEmpty && !isError && visiblePodcasts.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
-          <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
-          <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">No se encontraron podcasts</h3>
-          <p className="text-sm text-dark-text-secondary">Prueba con otra categoría o artista.</p>
-        </div>
-      )}
+            {allowEmpty && visiblePodcasts.length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-3xl border border-dark-border/40 bg-dark-card/80 py-20 text-center shadow-inner">
+                <Search className="mb-4 h-16 w-16 text-dark-text-muted" strokeWidth={1.25} />
+                <h3 className="mb-2 text-lg font-semibold text-dark-text-primary">No se encontraron podcasts</h3>
+                <p className="text-sm text-dark-text-secondary">Prueba con otra categoría o artista.</p>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </div>
   )
 }

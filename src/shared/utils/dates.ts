@@ -7,7 +7,7 @@ export function formatReleaseDate(input?: string) {
 
   try {
     return format(new Date(input), DATE_FORMAT)
-  } catch (error) {
+  } catch {
     console.error('[dates] invalid date format', { input })
     return undefined
   }

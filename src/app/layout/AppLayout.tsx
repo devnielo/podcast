@@ -24,7 +24,7 @@ export function AppLayout({ header, sidebar, player, children }: AppLayoutProps)
       <div className={`mx-auto flex w-full max-w-screen-2xl gap-8 px-6 py-8 ${
         isDetailPage 
           ? 'flex-1 overflow-hidden min-h-0' 
-          : 'w-full overflow-y-auto'
+          : 'flex-1 overflow-y-auto'
       }`}>
         {sidebar && <aside className="w-72 shrink-0 overflow-y-auto">{sidebar}</aside>}
 

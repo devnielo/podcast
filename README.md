@@ -1,69 +1,82 @@
-# 🎙️ Podcast Player - ZARA Front-End Test
+# Podcast Player - ZARA Front-End Test
 
-Single Page Application (SPA) para escuchar podcasts musicales. Aplicación desarrollada con React, TypeScript, Vite y TailwindCSS.
+Single Page Application (SPA) for listening to music podcasts. Application developed with React, TypeScript, Vite and TailwindCSS.
 
-## Requisitos Cumplidos
+## Requirements Met
 
-**3 Vistas Implementadas:**
-- Vista principal: Top 100 podcasts con filtro reactivo
-- Detalle de podcast: Sidebar + lista de episodios
-- Detalle de episodio: Reproductor HTML5 nativo + descripción sanitizada
+**3 Views Implemented:**
+- Main view: Top 100 podcasts with reactive filter
+- Podcast detail: Sidebar + episode list
+- Episode detail: Native HTML5 player + sanitized description
 
-**Características Técnicas:**
-- URLs limpias (sin hash #)
-- SPA con navegación en cliente
-- Caché local 24h con React Query
-- Assets sin minificar en development
-- Assets minificados en production
-- Indicador visual de navegación en esquina superior derecha
-- HTML sanitizado con DOMPurify
-- Tema oscuro inspirado en Spotify
+**Technical Features:**
+- Clean URLs (no hash #)
+- SPA with client-side navigation
+- 24h local cache with React Query
+- Unminified assets in development
+- Minified assets in production
+- Visual navigation indicator in top-right corner
+- HTML sanitized with DOMPurify
+- Dark theme inspired by Spotify
 
 ---
 
-## Instalación
+## Installation
 
-### Requisitos Previos
-- Node.js 18+ 
-- npm o yarn
+### Prerequisites
+- Node.js 22+ 
+- npm
 - Git
-- Docker (opcional, para despliegue en contenedor)
+- Docker (optional, for container deployment)
 
-### Pasos de Instalación
+### Installation Steps
 
 ```bash
-# 1. Clonar repositorio
+# 1. Clone repository
 git clone https://github.com/devnielo/podcast.git
 cd podcast
 
-# 2. Instalar dependencias
+# 2. Install dependencies
 npm install
 ```
 
+### CORS Setup (Important)
+
+The application uses the CORS proxy `https://cors-anywhere.herokuapp.com/` to fetch podcast data from iTunes API.
+
+**Before running the application for the first time:**
+
+1. Visit `https://cors-anywhere.herokuapp.com/corsdemo` in your browser
+2. Click the "Request temporary access to the demo server" button
+3. You will receive temporary access (valid for 7 days)
+4. After 7 days, you may need to request access again
+
+Alternatively, the app has a fallback to `https://allorigins.win/` if the primary proxy is unavailable.
+
 ---
 
-## Modo Development Recomendado
+## Recommended Development Mode
 
-**Assets sin minificar, con Hot Module Replacement (HMR)**
+**Unminified assets with Hot Module Replacement (HMR)**
 
 ```bash
 npm run dev
 ```
 
-La aplicación se abrirá automáticamente en `http://localhost:5173`
+The application will automatically open at `http://localhost:5173`
 
-**Características:**
-- Recarga en caliente (HMR)
-- Source maps para debugging
-- Assets sin minificar (legibles en DevTools)
-- Logs detallados en consola
-- Validación de tipos en tiempo real
+**Features:**
+- Hot Module Replacement (HMR)
+- Source maps for debugging
+- Unminified assets (readable in DevTools)
+- Detailed console logs
+- Real-time type validation
 
 ---
 
-## Modo Production
+## Production Mode
 
-**Assets concatenados y minificados**
+**Concatenated and minified assets**
 
 ### Build
 
@@ -71,175 +84,188 @@ La aplicación se abrirá automáticamente en `http://localhost:5173`
 npm run build
 ```
 
-Esto genera:
-- Archivos minificados en `dist/`
-- Assets optimizados y concatenados
-- Source maps opcionales
+This generates:
+- Minified files in `dist/`
+- Optimized and concatenated assets
+- Optional source maps
 
-### Servir Localmente
+### Serve Locally
 
 ```bash
 npm run preview
 ```
 
-La aplicación estará disponible en `http://localhost:4173`
+The application will be available at `http://localhost:4173`
 
 ---
 
-## Docker (Producción)
+## Docker (Production)
 
-### Con docker-compose (Recomendado)
+### With docker-compose (Recommended)
 
 ```bash
 docker-compose up --build
 ```
 
-### O manualmente
+### Or manually
 
 ```bash
 docker build -t podcast-web:latest .
 docker run --rm -p 4173:4173 podcast-web:latest
 ```
 
-La aplicación estará disponible en `http://localhost:4173`
+The application will be available at `http://localhost:4173`
 
-### Características Docker
-- Node.js 24 (compatible con Vite)
-- Build con `npm install` + `npm run build`
-- Ejecuta `npm run preview --host` para servir assets
-- Accesible desde host con `--host`
-- Imagen optimizada (~500MB)
-- Perfecto para testing y desarrollo
+### Docker Features
+- Node.js 24 (compatible with Vite)
+- Build with `npm install` + `npm run build`
+- Runs `npm run preview --host` to serve assets
+- Accessible from host with `--host`
+- Optimized image (~500MB)
+- Perfect for testing and development
 
 ---
 
-## Scripts npm
+## npm Scripts
 
 ```bash
-npm run dev          # Modo development con HMR
-npm run build        # Build para producción (minificado)
-npm run preview      # Preview local de la build
+npm run dev          # Development mode with HMR
+npm run build        # Production build (minified)
+npm run preview      # Local preview of build
 npm run lint         # ESLint + Prettier check
 npm run typecheck    # TypeScript type checking
-npm run test         # Tests con Vitest
-npm run test:ui      # UI dashboard de tests
-npm run test:coverage # Reporte de cobertura
+npm run test         # Tests with Vitest
+npm run test:ui      # Tests UI dashboard
+npm run test:coverage # Coverage report
 ```
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
 src/
 ├── app/
-│   ├── layout/          # Layout base y cabecera
+│   ├── layout/          # Base layout and header
 │   ├── providers/       # Context providers (React Query, Player, etc.)
-│   └── routes/          # Configuración de rutas
+│   └── routes/          # Route configuration
 ├── pages/
-│   ├── home/            # Vista principal (Top 100)
-│   ├── podcast/         # Detalle de podcast
-│   └── episode/         # Detalle de episodio
+│   ├── home/            # Main view (Top 100)
+│   ├── podcast/         # Podcast detail
+│   └── episode/         # Episode detail
 ├── features/
-│   └── podcasts/        # Componentes y hooks del dominio
+│   └── podcasts/        # Domain components and hooks
 ├── entities/
-│   ├── podcast/         # Tipos y mappers
-│   └── episode/         # Tipos y mappers
+│   ├── podcast/         # Types and mappers
+│   └── episode/         # Types and mappers
 ├── shared/
 │   ├── api/             # Fetcher, adapters, CORS proxy
-│   ├── components/      # UI genérica
-│   ├── hooks/           # Hooks reutilizables
+│   ├── components/      # Generic UI
+│   ├── hooks/           # Reusable hooks
 │   └── utils/           # Helpers
-└── index.css            # Estilos globales
+└── index.css            # Global styles
 ```
 
 ---
 
-## APIs Utilizadas
+## APIs Used
 
 - **Top 100 Podcasts:** `https://itunes.apple.com/us/rss/toppodcasts/limit=100/genre=1310/json`
-- **Detalle Podcast:** `https://itunes.apple.com/lookup?id={podcastId}`
-- **CORS Proxy:** `https://cors-anywhere.herokuapp.com/`
+- **Podcast Detail:** `https://itunes.apple.com/lookup?id={podcastId}`
+- **CORS Proxy:** `https://cors-anywhere.herokuapp.com/` (requires temporary access request)
 
 ---
 
-## Caché Local (24h)
+## Local Cache (24h)
 
-La aplicación implementa caché local de 24 horas usando React Query:
+The application implements 24-hour local cache using React Query:
 
-- **Top 100 podcasts:** Se cachea la primera solicitud
-- **Detalles de podcast:** Se cachea por podcast
-- **Episodios:** Se cachea por podcast
+- **Top 100 podcasts:** First request is cached
+- **Podcast details:** Cached per podcast
+- **Episodes:** Cached per podcast
 
-Si pasan 24h, la aplicación solicita datos frescos automáticamente.
+After 24h, the application automatically requests fresh data.
 
 ---
 
-## Tecnologías
+## Technologies
 
 - **Framework:** React 18+
-- **Lenguaje:** TypeScript (strict mode)
+- **Language:** TypeScript (strict mode)
 - **Build Tool:** Vite
-- **Estilos:** TailwindCSS
+- **Styling:** TailwindCSS
 - **State Management:** React Query (server state)
-- **Routing:** React Router v6+ (URLs limpias)
-- **Sanitización:** DOMPurify
-- **Iconos:** Lucide Icons
-- **Fuente:** Monument Grotesk
+- **Routing:** React Router v6+ (clean URLs)
+- **Sanitization:** DOMPurify
+- **Icons:** Lucide Icons
+- **Font:** Monument Grotesk
 
 ---
 
 ## Testing
 
 ```bash
-# Tests unitarios y de componentes
+# Unit and component tests
 npm run test
 
-# Con UI dashboard
+# With UI dashboard
 npm run test:ui
 
-# Reporte de cobertura
+# Coverage report
 npm run test:coverage
 ```
 
 ---
 
-## 📝 Commits y Versiones
+## Bonus Features
 
-El proyecto utiliza Conventional Commits y semantic versioning:
-
-- `v0.1.0-init` - Scaffold inicial
-- `v0.2.0-home` - Vista principal
-- `v0.3.0-podcast-detail` - Detalle de podcast
-- `v0.4.0-episode-detail` - Detalle de episodio
-- `v0.5.0-sanitization` - Sanitización de HTML
-- `v0.6.0+` - Optimizaciones y mejoras
-
----
-
-## 🔍 Debugging
-
-### En Development
-
-1. Abre DevTools (F12)
-2. Ve a la pestaña **Console** para ver logs
-3. Usa **Network** para inspeccionar requests
-4. **Sources** muestra código sin minificar con source maps
-
-### En Production
-
-- Los errores se muestran en consola del navegador
-- No hay logs innecesarios
-- Assets minificados para mejor rendimiento
+- **Advanced Header Search:** Dropdown with mini podcast cards (SPA, no refresh)
+- **Sticky Filters:** Automatically appear when scrolling and hidden under header
+- **Spotify-inspired Design:** Dark theme, Monument Grotesk, cards with hover effects
+- **Accessibility:** ARIA roles, keyboard navigation (ArrowLeft/Right), semantic HTML
+- **Production-Grade Tests:** 60 tests, >85% coverage, Vitest + RTL + MSW
+- **Multi-stage Docker:** Optimized build, Nginx with SPA fallback
+- **Strict TypeScript:** `strict: true`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`
 
 ---
 
-## 📄 Licencia
+## Commits and Versions
 
-Propiedad de ZARA - Prueba Front-End
+The project uses Conventional Commits and semantic versioning:
+
+- `v0.1.0-init` - Initial scaffold
+- `v0.2.0-home` - Main view
+- `v0.3.0-podcast-detail` - Podcast detail
+- `v0.4.0-episode-detail` - Episode detail
+- `v0.5.0-sanitization` - HTML sanitization
+- `v0.6.0+` - Optimizations and improvements
+- `v1.0.0-production-ready` - **FINAL VERSION - All requirements met, tests passing**
 
 ---
 
-## 👨‍💻 Autor
+## Debugging
 
-Desarrollado como prueba técnica front-end para ZARA
+### In Development
+
+1. Open DevTools (F12)
+2. Go to **Console** tab to see logs
+3. Use **Network** to inspect requests
+4. **Sources** shows unminified code with source maps
+
+### In Production
+
+- Errors are shown in browser console
+- No unnecessary logs
+- Minified assets for better performance
+
+---
+
+## License
+
+Property of ZARA - Front-End Test
+
+---
+
+## Author
+
+Developed by Daniel Quesada as a front-end technical test for ZARA

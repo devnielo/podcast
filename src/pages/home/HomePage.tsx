@@ -1,7 +1,6 @@
 import { Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useIsFetching } from '@tanstack/react-query'
 
 import type { PodcastSummary } from '@/entities/podcast/types'
 import { PodcastCard } from '@/shared/components/PodcastCard'
@@ -21,7 +20,6 @@ const CATEGORY_MAX = 4
 export function HomePage() {
   const navigate = useNavigate()
   const { data, isLoading, isError } = useTopPodcasts()
-  const isFetching = useIsFetching() > 0
   const podcasts: FeaturedPodcast[] = useMemo(
     () =>
       (data ?? []).map((podcast) => ({
@@ -37,7 +35,7 @@ export function HomePage() {
   const [activeTag, setActiveTag] = useState<string>(() => new URLSearchParams(window.location.search).get('tag') ?? 'all')
 
   const loading = isLoading && podcasts.length === 0
-  const showInitialSkeleton = (isLoading || isFetching) && podcasts.length === 0
+  const showInitialSkeleton = isLoading
   const LOAD_STEP = 12
   const [visibleCount, setVisibleCount] = useState(LOAD_STEP)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
@@ -168,10 +166,22 @@ export function HomePage() {
       const el = filtersRef.current
       if (!el) return
       const top = el.getBoundingClientRect().top
-      // Add small cushion so it appears just before overlapping
-      setPinFilters(top <= stickyTop + 4)
+      // Show sticky when filters are being hidden by header (top is negative or very small)
+      setPinFilters(top <= 0)
     }
-    onScroll()
+    
+    // Find the scrollable container (AppLayout main div)
+    const scrollContainer = document.querySelector('[class*="overflow-y-auto"]')
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', onScroll, { passive: true })
+      window.addEventListener('resize', onScroll)
+      return () => {
+        scrollContainer.removeEventListener('scroll', onScroll)
+        window.removeEventListener('resize', onScroll)
+      }
+    }
+    
+    // Fallback to window scroll
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
     return () => {
@@ -286,7 +296,7 @@ export function HomePage() {
           className={`fixed left-0 right-0 z-40 border-b border-dark-border/40 bg-dark-surface/90 backdrop-blur transition-all duration-300 ease-out ${
             pinFilters ? 'opacity-100 translate-y-0 shadow-[0_10px_20px_rgba(0,0,0,0.35)]' : 'opacity-0 -translate-y-2 pointer-events-none'
           }`}
-          style={{ top: 41, width: '100%' }}
+          style={{ top: stickyTop, width: '100%' }}
           aria-hidden={!pinFilters}
         >
           <div className="mx-auto flex w-full max-w-screen-2xl items-center gap-3 px-6 py-2">

@@ -1,10 +1,12 @@
 import { Chrome, Download, Home, LogIn, Search, X } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import logoUrl from '@/assets/logo.svg'
 import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
+import { SearchResults } from './SearchResults'
+import { useTopPodcasts } from '@/features/podcasts'
 
 interface HeaderProps {
   showIndicator?: boolean
@@ -12,6 +14,25 @@ interface HeaderProps {
 
 export function Header({ showIndicator = false }: HeaderProps) {
   const [showLogin, setShowLogin] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showResults, setShowResults] = useState(false)
+  const { data: allPodcasts = [] } = useTopPodcasts()
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const q = searchQuery.toLowerCase()
+    return allPodcasts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.author.toLowerCase().includes(q) ||
+        (p.category?.toLowerCase().includes(q) ?? false),
+    )
+  }, [searchQuery, allPodcasts])
+
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+  }
 
   return (
     <>
@@ -37,7 +58,15 @@ export function Header({ showIndicator = false }: HeaderProps) {
                 size="lg"
                 leftIcon={<Search className="h-4 w-4" strokeWidth={1.5} />}
                 className="text-base"
+                value={searchQuery}
+                onChange={(e) => {
+                  handleSearchChange(e.currentTarget.value)
+                  setShowResults(true)
+                }}
+                onFocus={() => setShowResults(true)}
+                onBlur={() => setTimeout(() => setShowResults(false), 200)}
               />
+              <SearchResults results={searchResults} query={searchQuery} isOpen={showResults} />
             </div>
           </div>
 

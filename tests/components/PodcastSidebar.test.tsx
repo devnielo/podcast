@@ -43,7 +43,7 @@ describe('PodcastSidebar', () => {
   })
 
   it('should not render description when not provided', () => {
-    const { ...propsWithoutDescription } = defaultProps
+    const { description, ...propsWithoutDescription } = defaultProps
     renderWithRouter(<PodcastSidebar {...propsWithoutDescription} />)
 
     expect(screen.queryByText('This is a test podcast description')).not.toBeInTheDocument()

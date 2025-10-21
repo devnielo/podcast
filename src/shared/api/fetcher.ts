@@ -1,25 +1,3 @@
-export function buildProxiedUrl(url: string, corsProxy = true, proxyBase = import.meta.env.VITE_CORS_PROXY_URL || undefined) {
-  if (!corsProxy) return url
-  const base = proxyBase ?? 'https://api.allorigins.win/raw?url='
-  return `${base}${encodeURIComponent(url)}`
-}
-
-export async function fetchJson<T>(url: string, init?: RequestInit, corsProxy = true): Promise<T> {
-  const target = buildProxiedUrl(url, corsProxy)
-  const res = await fetch(target, {
-    ...init,
-    headers: {
-      Accept: 'application/json, text/plain, */*',
-      ...(init?.headers ?? {}),
-    },
-  })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Request failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ''}`)
-  }
-  return (await res.json()) as T
-}
-
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label = 'request'): Promise<T> {
   if (!timeoutMs) return promise
   const controller = new AbortController()

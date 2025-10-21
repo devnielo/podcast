@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { usePlayer } from '@/app/providers/usePlayerHook'
-import { getCorsProxyUrl } from '@/shared/api/cors-proxies'
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds) || isNaN(seconds)) return '00:00'
@@ -29,8 +28,8 @@ export function AudioPlayer() {
     const audio = audioRef.current
     if (!audio || !currentEpisode) return
 
-    // Set initial URL when episode changes (use direct URL first)
-    audio.src = getCorsProxyUrl(currentEpisode.audioUrl, 0)
+    // Set initial URL when episode changes
+    audio.src = currentEpisode.audioUrl
     audio.load()
   }, [currentEpisode])
 
